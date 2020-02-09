@@ -49,9 +49,9 @@
     },
     "mp-weixin": { /* 小程序特有相关 */
         "usingComponents":true,
-        "appid": "",
+        "appid": "wx37100313bf3b5388",
         "setting" : {
-        	"urlCheck" : true
+        	"urlCheck" : false
         }
     },
     "mp-alipay" : {
