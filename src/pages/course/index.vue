@@ -1,7 +1,5 @@
 <template>
-  <view>
-    <course-list :courses="courses"></course-list>
-  </view>
+    <courses-list :courses="courses" />
 </template>
 
 <script lang="ts">
@@ -9,12 +7,20 @@ import Vue from "vue";
 import { instance } from "../../utlis/http.js";
 import CoursesList from "../../components/CourseList.vue";
 export default Vue.extend({
+  components: {
+    CoursesList
+  },
   data() {
     return {
       courses: []
     };
   },
-  onLoad() {},
+  // onLoad() {
+  //   this.getCourseData();
+  // },
+  onShow(){
+    this.getCoursesData();
+  },
   methods: {
     // 获取课程列表
     async getCoursesData() {
@@ -33,11 +39,22 @@ export default Vue.extend({
       }
     }
   },
-  components: {
-    CoursesList
-  }
+  
 });
 </script>
 
-<style>
+<style >
+	.content {
+		text-align: center;
+		height: 400upx;
+	}
+    .logo{
+        height: 200upx;
+        width: 200upx;
+        margin-top: 200upx;
+    }
+	.title {
+		font-size: 36upx;
+		color: #8f8f94;
+	}
 </style>

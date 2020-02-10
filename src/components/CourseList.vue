@@ -29,7 +29,6 @@ export default Vue.extend({
         
     },
     onLoad(){
-      console.log(this.data.course)
     }
 })
 </script>
