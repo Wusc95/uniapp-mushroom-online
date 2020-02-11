@@ -53,11 +53,14 @@ export default Vue.extend({
       userInfo: {}
     };
   },
-  onLoad() {},
+  onLoad() {
+	  this.getUserInnfo();
+  },
   methods: {
     // 获取用户信息
     async getUserInnfo() {
-      const result = await instance({ url: "my/info" });
+	  const result = await instance({ url: "my/info" });
+	  console.log(result)
       if (result.data.status === 0) {
         this.userInfo = result.data.message;
       }

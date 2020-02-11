@@ -6,9 +6,9 @@
         <text class="title">{{item.title}}</text>
         <text class="progress">已学习{{item.study_hour}}课时/{{item.total_hour || 0}}课时</text>
       </view>
-      <!-- <view class="circle">
+      <view class="circle">
         <circle :canvasId="item.sid" :progress="item.study_progress" :width="55" :height="55"></circle>
-      </view> -->
+      </view>
     </view>
     <view v-if="isEmpty">
       <text class="no-study-tip">您还没有任何学习记录哦，赶快去学习吧~</text>
@@ -18,22 +18,33 @@
 
 <script lang="ts">
 import Vue from "vue";
-import {instance} from "../../utlis/http.js"
+import { instance } from "../../utlis/http.js";
+import circle from "../../components/Circle.vue";
 export default Vue.extend({
+  components: {
+    circle
+  },
   data() {
     return {
-	  studyProgress:[],
-	  isEmpty:true
+      studyProgress: [],
+      isEmpty: true
     };
   },
-  onLoad() {},
+  onLoad() {
+    this.getStudyProgress();
+  },
   methods: {
-	  // 获取学习进度
-	  async getStudyProgress(){
-		  let res = await instance({
-			  url:""
-		  })
-	  }
+    // 获取学习进度
+    async getStudyProgress() {
+      let res = await instance({
+        url: "study/progress"
+      });
+      if (res.data.status === 0) {
+		this.studyProgress = res.data.message;
+		console.log(this.studyProgress)
+        this.isEmpty = false;
+      }
+    }
   }
 });
 </script>
