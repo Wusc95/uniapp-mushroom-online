@@ -1,5 +1,5 @@
 // 封装网络请求
-const BASEURL = 'http://localhost:3000/api/'
+const BASEURL = 'http://localhost:3000/api/' // ben
 export const instance = ({url,data,header={},method="GET",isLogin=false,tips='数据加载中...'})=>{
     // 返回一个promise对象
     return new Promise((resolve,reject)=>{

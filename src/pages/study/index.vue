@@ -30,7 +30,7 @@ export default Vue.extend({
       isEmpty: true
     };
   },
-  onLoad() {
+  onShow() {
     this.getStudyProgress();
   },
   methods: {

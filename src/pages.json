@@ -16,6 +16,9 @@
 			"path":"pages/search/index"
 		},
 		{
+			"path":"pages/play/index"
+		},
+		{
 			"path": "pages/course-details/index"
 		},
 		{

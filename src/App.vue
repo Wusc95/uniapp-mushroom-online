@@ -6,9 +6,9 @@ export default Vue.extend({
     // 在这里需要判断是否token 如果存在直接跳转到首页
     const token = uni.getStorageSync("my_token");
     if (token) {
-      uni.reLaunch({
-        url: "/pages/home/index"
-      });
+      // uni.reLaunch({
+      //   url: "/pages/home/index"
+      // });
     }
   },
   onShow() {},
