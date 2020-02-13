@@ -20,12 +20,74 @@
       <text class="introduce">{{courseDetails.course.introduction}}</text>
       <view class="star">
         <!-- Start子组件 -->
-        <start :getStar='courseDetails.course.level'></start>
+        <start :score="courseDetails.course.score" @changeScore="changeScore"></start>
         <text>{{courseDetails.course.study_count}}人在学</text>
       </view>
       <view class="study-share">
         <image @click="goToStudy" src="/static/images/start_study@2x.png" alt />
         <button open-type="share" plain class="share-button"></button>
+      </view>
+    </view>
+    <!-- tabBar -->
+    <view class="catalog">
+      <view class="head">
+        <text
+          v-for="(item,index) in menu"
+          :key="index"
+          @click="toggleSelect(index)"
+          :class="[activeIndex === index?'active':'']"
+        >{{item}}</text>
+      </view>
+      <view class="body">
+        <view class="catelog-container" v-if="activeIndex === 0">
+          <text v-for="(item,index) in courseDetails.videos" :key="index">{{item.id}}.{{item.name}}</text>
+          <text v-if="!courseDetails.videos">courseDetails.videos</text>
+        </view>
+        <view class="lecturer-container" v-else-if="activeIndex === 1">
+          <view v-if="courseDetails.lecturer" class="info">
+            <image :src="courseDetails.lecturer.avatar" alt />
+            <view class="name-follow">
+              <text>{{courseDetails.lecturer.name}}</text>
+              <text>关注人数：{{courseDetails.lecturer.follow_count}}</text>
+            </view>
+            <text
+              @click="followOrUnFollow(courseDetails.lecturer)"
+              :class="[courseDetails.lecturer.is_follow === 0 ? 'unfollow' : 'follow']"
+            >{{courseDetails.lecturer.is_follow === 0 ? '关注' : '已关注'}}</text>
+          </view>
+          <view v-if="courseDetails.lecturer" class="introduce">
+            <text>{{courseDetails.lecturer.introduction}}</text>
+          </view>
+          <text style="color:#636363;font-size:15px;" v-if="!courseDetails.lecturer">暂无讲师简介哦~</text>
+        </view>
+        <view class="comment-container" v-else-if="activeIndex === 2">
+          <view class="comment-item" v-for="(item,index) in courseDetails.comments" :key="index">
+            <view class="info">
+              <image :src="item.avatar" />
+              <view class="nickname-content">
+                <view class="nickname">
+                  <view style="margin-top:12rpx;">{{item.nickname}}</view>&nbsp;&nbsp;
+                  <view style="margin-left:20rpx">
+                    <start :score="item.score" />
+                  </view>
+                </view>
+                <view>{{item.content}}</view>
+              </view>
+            </view>
+            <view class="star">
+              <image
+                @click="likeOrUnLike(item,index)"
+                :src="item.is_like === 1 ? '/static/images/like_normal@2x.png' : '/static/images/like_highlight@2x.png'"
+              />
+            </view>
+            <text class="time">{{item.comment_time}}</text>
+          </view>
+
+          <text
+            style="color:#636363;font-size:15px;padding:38rpx;"
+            v-if="!courseDetails.comments"
+          >暂无评论哦，请学习之后再评价~</text>
+        </view>
       </view>
     </view>
   </view>
@@ -43,7 +105,10 @@ export default Vue.extend({
     return {
       courseId: null,
       courseDetails: null,
-      isPlaying: false
+      isPlaying: false,
+      menu: ["目录", "讲师介绍", "评价"],
+      activeIndex: 0, // 按钮的索引
+      isLike:1 // 是否点赞 1不点赞2点赞
     };
   },
   onLoad(options) {
@@ -68,7 +133,7 @@ export default Vue.extend({
       });
       if (res.data.status === 0) {
         this.courseDetails = res.data.message;
-        console.log(this.courseDetails);
+        this.menu[2] = `评价(${res.data.message.commentTotal})`;
       } else {
         uni.showToast({
           title: "服务器出错，请稍后重试",
@@ -86,10 +151,84 @@ export default Vue.extend({
       // }, 200);
     },
     // 跳转到学习页面
-    goToStudy() {
+    goToStudy(id) {
       uni.navigateTo({
-        url: "/pages/play/index"
+        url: `/pages/play/index?id=${this.courseId}`
       });
+    },
+    // 修改星星的数据
+    changeScore(value) {
+      this.courseDetails.course.score = value;
+      console.log(value);
+    },
+    // tab的选中事件
+    toggleSelect(index) {
+      this.activeIndex = index;
+    },
+    // 是否关注作者
+    async followOrUnFollow(lecturer) {
+      switch (lecturer.is_follow) {
+        case 0: // 如果等于0是未关注状态，发送请求改为关注状态1
+          const res1 = await instance({
+            url: "lecturer/follow",
+            data: {
+              lecturer_id: lecturer.id
+            },
+            method: "POST"
+          });
+          if (res1.data.status === 0) {
+            this.courseDetails.lecturer.is_follow = 1;
+            uni.showToast({
+              title: res1.data.message,
+              icon: "none",
+              duration: 2000
+            });
+          }
+          break;
+        case 1:
+          const res2 = await instance({
+            url: "lecturer/unfollow",
+            data: {
+              lecturer_id: lecturer.id
+            },
+            method: "POST"
+          });
+          if (res2.data.status === 0) {
+            this.courseDetails.lecturer.is_follow = 0;
+            uni.showToast({
+              title: res2.data.message,
+              icon: "none",
+              duration: 2000
+            });
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    // 评论是否点赞
+    async likeOrUnLike(item,index) {
+      if(item.is_like === 1){
+        this.isLike = 2
+      }else{
+        this.isLike = 1
+      }
+      const res = await instance({
+        url:'comment/like',
+        data:{
+          comment_id:item.id,
+          is_like:this.isLike
+        },
+        method:'POST'
+      })
+      if(res.data.status === 0){
+        console.log(this.courseDetails.comments[index].is_like)
+        if(item.is_like === 1){
+          this.courseDetails.comments[index].is_like = 2
+        }else{
+          this.courseDetails.comments[index].is_like = 1
+        }
+      }
     }
   }
 });

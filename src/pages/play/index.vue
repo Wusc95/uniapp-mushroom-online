@@ -5,9 +5,12 @@
 </template>
 
 <script>
-export default {
-
-}
+ import Vue from 'vue'
+ export default Vue.extend({
+   onLoad(option){
+     console.log(option.id)
+   }
+ })
 </script>
 
 <style>
