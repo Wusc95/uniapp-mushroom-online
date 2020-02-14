@@ -16,6 +16,9 @@
 			"path":"pages/search/index"
 		},
 		{
+			"path":"pages/pay/index"
+		},
+		{
 			"path":"pages/play/index"
 		},
 		{
