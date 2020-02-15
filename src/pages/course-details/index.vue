@@ -108,7 +108,7 @@ export default Vue.extend({
       isPlaying: false,
       menu: ["目录", "讲师介绍", "评价"],
       activeIndex: 0, // 按钮的索引
-      isLike:1 // 是否点赞 1不点赞2点赞
+      isLike: 1 // 是否点赞 1不点赞2点赞
     };
   },
   onLoad(options) {
@@ -152,6 +152,7 @@ export default Vue.extend({
     },
     // 跳转到学习页面
     goToStudy(id) {
+      uni.createVideoContext("videoId").pause();
       uni.navigateTo({
         url: `/pages/play/index?id=${this.courseId}`
       });
@@ -207,26 +208,26 @@ export default Vue.extend({
       }
     },
     // 评论是否点赞
-    async likeOrUnLike(item,index) {
-      if(item.is_like === 1){
-        this.isLike = 2
-      }else{
-        this.isLike = 1
+    async likeOrUnLike(item, index) {
+      if (item.is_like === 1) {
+        this.isLike = 2;
+      } else {
+        this.isLike = 1;
       }
       const res = await instance({
-        url:'comment/like',
-        data:{
-          comment_id:item.id,
-          is_like:this.isLike
+        url: "comment/like",
+        data: {
+          comment_id: item.id,
+          is_like: this.isLike
         },
-        method:'POST'
-      })
-      if(res.data.status === 0){
-        console.log(this.courseDetails.comments[index].is_like)
-        if(item.is_like === 1){
-          this.courseDetails.comments[index].is_like = 2
-        }else{
-          this.courseDetails.comments[index].is_like = 1
+        method: "POST"
+      });
+      if (res.data.status === 0) {
+        console.log(this.courseDetails.comments[index].is_like);
+        if (item.is_like === 1) {
+          this.courseDetails.comments[index].is_like = 2;
+        } else {
+          this.courseDetails.comments[index].is_like = 1;
         }
       }
     }

@@ -2,7 +2,7 @@
   <view class="play-container" v-if="courseDetails">
     <!-- 视屏 -->
     <view class="cover_image">
-      <video id="videoId" controls :src="playingUrl"></video>
+      <video @play="onPlayVideo" id="videoId" controls :src="playingUrl"></video>
     </view>
     <!-- 基本信息渲染 -->
     <view class="introduction">
@@ -34,6 +34,8 @@
           :key="item.id"
         >
           <text :class="[videoIndex === index?'active':'']">{{item.id}}.{{item.name}}</text>
+          <text v-if="item.is_study == 1" class="studied">已学习</text>
+          <text v-else :class="['time',index === playIndex ? 'active' : '']">{{item.duration}}</text>
         </view>
       </view>
     </view>
@@ -53,7 +55,8 @@ export default Vue.extend({
       courseId: null, // 课程id
       courseDetails: null, // 课程内容
       playingUrl: null, // 播放url
-      videoIndex: 0 // 索引
+      videoIndex: 0, // 索引
+      isValidateRight: false //判断是否授权购买
     };
   },
   onShow() {
@@ -67,6 +70,7 @@ export default Vue.extend({
       });
       if (res.data.status === 0) {
         this.courseDetails = res.data.message;
+        this.playingUrl = res.data.message.videos[0].video_url;
       } else {
         uni.showToast({
           title: "服务器错误，请稍后重试",
@@ -97,16 +101,21 @@ export default Vue.extend({
     evaluate() {
       console.log("-----------评价--------------");
     },
+    // 播放时触发的事件
+    onPlayVideo() {
+      if (!this.isValidateRight) {
+        this.playOnVideo(0, this.courseDetails.videos[0]);
+      }
+    },
     // 索引切换，播放视屏
     async playOnVideo(index, item) {
       this.videoIndex = index;
-      this.playingUrl = item.video_url;
       // 停止之前播放的视屏
       uni.createVideoContext("videoId").pause();
       // 去鉴权，如果支付了，则正常播放，如果没有，则提示要他跳转支付页面
       const isCanPlay = await this.validatePlayRight();
-      console.log(isCanPlay);
       if (isCanPlay) {
+        this.playingUrl = item.video_url;
         // playingUrl 赋值后页面会重新渲染，渲染期间视屏播放不了
         setTimeout(() => {
           uni.createVideoContext("videoId").play();
@@ -115,10 +124,10 @@ export default Vue.extend({
         // 提示需要购买，然后跳转到购买页面
         uni.showModal({
           title: "提示",
-          content: "您还没有购买，请先购买后，再来播放哦~",
+          content: "您还没有购买，请先购买后，" + "\n" + "来播放哦~",
           confirmText: "去购买",
           confirmColor: "#ff9a29",
-          success: res=> {
+          success: res => {
             if (res.confirm) {
               uni.navigateTo({
                 url: `/pages/pay/index?id=${this.courseId}&title=${this.courseDetails.course.title}
@@ -139,10 +148,12 @@ export default Vue.extend({
         }
       });
       if (res.data.status === 0) {
+        console.log(res.data.message.pay_status)
         if (res.data.message.pay_status === 0) {
           return Promise.resolve(false);
         } else {
           return Promise.resolve(true);
+          this.isValidateRight = true;
         }
       } else {
         return Promise.resolve(false);
