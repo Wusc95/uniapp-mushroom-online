@@ -7,7 +7,7 @@
         <text class="progress">已学习{{item.study_hour}}课时/{{item.total_hour || 0}}课时</text>
       </view>
       <view class="circle">
-        <circle :canvasId="item.sid" :progress="item.study_progress" :width="55" :height="55"></circle>
+        <circle ref="circleRef" :canvasId="item.sid" :progress="item.study_progress" :width="55" :height="55"></circle>
       </view>
     </view>
     <view v-if="isEmpty">
@@ -41,8 +41,15 @@ export default Vue.extend({
       });
       if (res.data.status === 0) {
         this.studyProgress = res.data.message;
-        console.log(this.studyProgress);
         this.isEmpty = false;
+
+
+        // 视图更新后，调用子组件的方法重新绘制进度
+        // Vue.nextTick(()=>{
+        //   this.$refs.circleRef && this.$refs.circleRef.forEach(element => {
+        //     element.drawCircle()
+        //   });
+        // })
       }
     }
   }

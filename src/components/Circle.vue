@@ -50,7 +50,6 @@
             drawCircle() {
                 // 1、根据 canvas-id 拿到 canvas上下文
                 const ctx = uni.createCanvasContext('canvasId'+this.canvasId,this)
-                
                 // 2、绘制背景的圆环
                 // 设置颜色
                 ctx.strokeStyle = this.backgroundColor
@@ -92,6 +91,11 @@
 
                 // 这里才能完成绘制图形的功能
                 ctx.draw()
+            }
+        },
+        watch:{
+            progress(){
+                this.drawCircle()
             }
         }
     })
