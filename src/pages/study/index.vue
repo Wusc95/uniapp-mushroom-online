@@ -40,8 +40,8 @@ export default Vue.extend({
         url: "study/progress"
       });
       if (res.data.status === 0) {
-		this.studyProgress = res.data.message;
-		console.log(this.studyProgress)
+        this.studyProgress = res.data.message;
+        console.log(this.studyProgress);
         this.isEmpty = false;
       }
     }

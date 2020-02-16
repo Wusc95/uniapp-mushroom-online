@@ -148,12 +148,11 @@ export default Vue.extend({
         }
       });
       if (res.data.status === 0) {
-        console.log(res.data.message.pay_status)
         if (res.data.message.pay_status === 0) {
           return Promise.resolve(false);
         } else {
-          return Promise.resolve(true);
           this.isValidateRight = true;
+          return Promise.resolve(true);
         }
       } else {
         return Promise.resolve(false);
