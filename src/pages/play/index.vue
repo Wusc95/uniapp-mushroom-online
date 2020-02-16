@@ -120,6 +120,20 @@ export default Vue.extend({
         setTimeout(() => {
           uni.createVideoContext("videoId").play();
         }, 200);
+
+        // 视屏播放后，记录学习状态，发送请求给后台
+        const res = await instance({
+          url:'study/video',
+          method:'POST',
+          data:{
+              course_id:this.courseId,
+              video_id:item.id
+          }
+        })
+        if(res.data.status === 0){
+          // 记录学习状态
+          this.courseDetails.videos[index].is_study = 1;
+        }
       } else {
         // 提示需要购买，然后跳转到购买页面
         uni.showModal({
