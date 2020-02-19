@@ -61,7 +61,7 @@
           <text style="color:#636363;font-size:15px;" v-if="!courseDetails.lecturer">暂无讲师简介哦~</text>
         </view>
         <view class="comment-container" v-else-if="activeIndex === 2">
-          <view class="comment-item" v-for="(item,index) in courseDetails.comments" :key="index">
+          <view class="comment-item" v-for="(item,index) in comments" :key="index">
             <view class="info">
               <image :src="item.avatar" />
               <view class="nickname-content">
@@ -108,7 +108,8 @@ export default Vue.extend({
       isPlaying: false,
       menu: ["目录", "讲师介绍", "评价"],
       activeIndex: 0, // 按钮的索引
-      isLike: 1 // 是否点赞 1不点赞2点赞
+      isLike: 1, // 是否点赞 1不点赞2点赞
+      comments:null
     };
   },
   onLoad(options) {
@@ -134,6 +135,7 @@ export default Vue.extend({
       if (res.data.status === 0) {
         this.courseDetails = res.data.message;
         this.menu[2] = `评价(${res.data.message.commentTotal})`;
+        this.comments = this.getComment();
       } else {
         uni.showToast({
           title: "服务器出错，请稍后重试",
@@ -230,8 +232,21 @@ export default Vue.extend({
           this.courseDetails.comments[index].is_like = 1;
         }
       }
+    },
+    // 获取到评论数据后，翻转数组，把最新的放到最前面
+    getComment() {
+      if (!this.courseDetails.comments) return null;
+
+      var arr = this.courseDetails.comments;
+      for (let i = 0; i < arr.length / 2; i++) {
+        var temp = arr[i];
+        arr[i] = arr[arr.length - 1 - i];
+        arr[arr.length - 1 - i] = temp;
+      }
+      return arr;
     }
-  }
+  },
+  computed: {}
 });
 </script>
 <style lang="less" scoped>

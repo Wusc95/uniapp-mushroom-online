@@ -23,6 +23,20 @@
         <image @click="evaluate" src="/static/images/evaluate@2x.png" alt />
       </view>
     </view>
+    <!-- 评论框 -->
+    <modal :visibate="visibate" title="评论" @closeModal="closeModal" @postComment="postComment">
+      <slot>
+        <view class="comment-content">
+          <textarea v-model="content" placeholder="请输入评论内容" rows="5"></textarea>
+        </view>
+        <view style="margin-top:10rpx;">
+          <text>评分：</text>
+          <view style="float:right;margin-right:300rpx;margin-top:-5rpx;">
+            <star @changeScore="changeScore" :readOnly=false :score="score" />
+          </view>
+        </view>
+      </slot>
+    </modal>
     <!-- 课程进度 -->
     <view class="course-progress">
       <view class="title">课程进度</view>
@@ -45,9 +59,10 @@
 <script>
 import Vue from "vue";
 import { instance } from "../../utlis/http.js";
+import Modal from "../../components/Modal.vue";
+import Star from "../../components/Start.vue"
 export default Vue.extend({
   onLoad(option) {
-    console.log(option.id);
     this.courseId = option.id;
   },
   data() {
@@ -56,7 +71,10 @@ export default Vue.extend({
       courseDetails: null, // 课程内容
       playingUrl: null, // 播放url
       videoIndex: 0, // 索引
-      isValidateRight: false //判断是否授权购买
+      isValidateRight: false, //判断是否授权购买
+      visibate: false, // 评论框是否显示
+      content: null, // 评论内容
+      score: 5 // 评价的分数
     };
   },
   onShow() {
@@ -97,9 +115,68 @@ export default Vue.extend({
           break;
       }
     },
-    // 评价
-    evaluate() {
-      console.log("-----------评价--------------");
+    // 评价按钮
+    async evaluate() {
+      // 发送请求，获取课程学习进度
+      let res = await instance({
+        url: "study/complete",
+        data: {
+          course_id: this.courseId
+        }
+      });
+      if (res.data.status === 0) {
+        if (res.data.complete === false) {
+          uni.showModal({
+            title: "提示",
+            content: "请先学习完毕，再来评价",
+            showCancel: false,
+            confirmColor: "#ff9a29"
+          });
+        } else {
+          this.visibate = true;
+        }
+      } else {
+        uni.showToast({
+          title: "服务器错误",
+          icon: "none",
+          duration: 1000
+        });
+      }
+    },
+    // 提交评论
+    async postComment() {
+      if(!this.content){
+        uni.showToast({
+          title: '请输入评论内容',
+          icon:'none',
+          duration: 1000
+        })
+        return
+      }
+      // 发送请求，提交评论内容
+      const res = await instance({
+        url:'comment/create',
+        method:'POST',
+        data:{
+          course_id:this.courseId,
+          content:this.content,
+          score:this.score
+        }
+      })
+
+      if(res.data.status === 0){
+        this.visibate = false;
+        uni.showToast({
+          title: '评论成功',
+          duration: 1000,
+          icon:'none'
+        });
+      }
+      console.log(res);
+    },
+    // 关闭评价框
+    closeModal() {
+      this.visibate = false;
     },
     // 播放时触发的事件
     onPlayVideo() {
@@ -123,14 +200,14 @@ export default Vue.extend({
 
         // 视屏播放后，记录学习状态，发送请求给后台
         const res = await instance({
-          url:'study/video',
-          method:'POST',
-          data:{
-              course_id:this.courseId,
-              video_id:item.id
+          url: "study/video",
+          method: "POST",
+          data: {
+            course_id: this.courseId,
+            video_id: item.id
           }
-        })
-        if(res.data.status === 0){
+        });
+        if (res.data.status === 0) {
           // 记录学习状态
           this.courseDetails.videos[index].is_study = 1;
         }
@@ -176,6 +253,10 @@ export default Vue.extend({
           icon: "none"
         });
       }
+    },
+    // 改变星星
+    changeScore(value){
+      this.score=value
     }
   },
   computed: {
@@ -221,6 +302,10 @@ export default Vue.extend({
           break;
       }
     }
+  },
+  components: {
+    Modal,
+    Star
   }
 });
 </script>

@@ -1,7 +1,13 @@
 <template>
   <view class="contain">
     <view class="bg_star">
-      <image v-for="(item,index) in 5" :key="item" @click="star(index)"  src="/static/images/star_empty@2x.png" mode />
+      <image
+        v-for="(item,index) in 5"
+        :key="item"
+        @click="star(index)"
+        src="/static/images/star_empty@2x.png"
+        mode
+      />
     </view>
     <view class="star">
       <image
@@ -22,16 +28,22 @@ export default Vue.extend({
     score: {
       type: Number,
       default: 0
+    },
+    readOnly: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
     return {
-      myScore:0
+      myScore: 0
     };
   },
   methods: {
     star(index) {
-        this.$emit("changeScore",index+1)
+      if (this.readOnly) return;
+
+      this.$emit("changeScore", index + 1);
     }
   },
   created() {
